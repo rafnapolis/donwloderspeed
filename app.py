@@ -10,7 +10,6 @@ import sys
 # ==========================================
 @st.cache_resource(show_spinner=False)
 def update_yt_dlp():
-    """Actualiza yt-dlp a la última versión al iniciar"""
     try:
         subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "yt-dlp", "-q"])
         return True
@@ -40,40 +39,38 @@ TEXTS = {
         "subtitle": "Descarga videos y audios a máxima velocidad. Sin frenos.",
         "lbl_url": "Pega el enlace del video aquí",
         "placeholder": "https://www.youtube.com/watch?v=...",
-        "fmt_video": "🎬 Video (MP4)",
+        "fmt_video": " Video (MP4)",
         "fmt_audio": "🎵 Audio (MP3)",
-        "btn_process": "⬇️ Iniciar Descarga Rápida",
+        "btn_process": "⬇️ INICIAR DESCARGA RÁPIDA",
         "processing": "Procesando en pista...",
         "fetching": "🔍 Obteniendo información del video...",
-        "converting_audio": "🎵 Extrayendo y convirtiendo a MP3...",
-        "downloading_video": "🎬 Descargando y optimizando video MP4...",
-        "saving": "💾 Guardando archivo...",
+        "downloading": "️ Descargando archivo...",
         "success": "✅ ¡Archivo procesado con éxito!",
         "error_invalid": "⚠️ Por favor, ingresa un enlace URL válido.",
         "error_general": "❌ Ocurrió un error al procesar el video.",
+        "error_no_format": "❌ No se encontró el formato solicitado. Intenta con otro video.",
         "step1_title": "✅ Archivo listo para descargar",
         "step1_desc": "Para mantener este servicio gratuito y rápido, completa un breve paso de verificación.",
         "btn_monetag": "🛡️ Paso 1: Verificar y Apoyar (Abrir en nueva pestaña)",
         "step2_desc": "¿Ya completaste el paso 1? Tu archivo está listo aquí 👇",
-        "btn_download": " Paso 2: Descargar Archivo",
+        "btn_download": "💾 Paso 2: Descargar Archivo",
         "footer": "DonwloaderspeedF1 • Potenciado por yt-dlp"
     },
     "en": {
-        "title": "️ DonwloaderspeedF1",
+        "title": "🏎️ DonwloaderspeedF1",
         "subtitle": "Download videos and audio at maximum speed. No brakes.",
         "lbl_url": "Paste video link here",
         "placeholder": "https://www.youtube.com/watch?v=...",
         "fmt_video": "🎬 Video (MP4)",
         "fmt_audio": "🎵 Audio (MP3)",
-        "btn_process": "⬇️ Start Fast Download",
+        "btn_process": "️ START FAST DOWNLOAD",
         "processing": "Processing on track...",
         "fetching": " Fetching video info...",
-        "converting_audio": "🎵 Extracting and converting to MP3...",
-        "downloading_video": "🎬 Downloading and optimizing MP4 video...",
-        "saving": "💾 Saving file...",
+        "downloading": "⬇️ Downloading file...",
         "success": "✅ File processed successfully!",
         "error_invalid": "⚠️ Please enter a valid URL link.",
-        "error_general": "❌ An error occurred while processing the video.",
+        "error_general": " An error occurred while processing the video.",
+        "error_no_format": "❌ Requested format not found. Try another video.",
         "step1_title": "✅ File ready for download",
         "step1_desc": "To keep this service free and fast, please complete a brief verification step.",
         "btn_monetag": "🛡️ Step 1: Verify & Support (Open in new tab)",
@@ -98,7 +95,7 @@ def set_language(new_lang):
     st.rerun()
 
 # ==========================================
-# 🎨 CSS PERSONALIZADO (DISEÑO F1)
+# 🎨 CSS PERSONALIZADO
 # ==========================================
 st.markdown("""
 <style>
@@ -154,25 +151,24 @@ st.markdown("""
 # ==========================================
 # 🖥️ INTERFAZ DE USUARIO
 # ==========================================
-col1, col2, col3 = st.columns([1, 2, 1])
+col1, col2, col3 = st.columns([1, 3, 1])
 with col2:
-    st.markdown(f"<h1 style='text-align:center; color:#F8FAFC; margin-bottom:0.2rem;'>{t['title']}</h1>", unsafe_allow_html=True)
+    st.markdown(f"<h1 style='text-align:center; color:#F8FAFC; margin-bottom:0.2rem; font-size:2rem; white-space:nowrap;'>{t['title']}</h1>", unsafe_allow_html=True)
     st.markdown(f"<p style='text-align:center; color:#94A3B8; margin-top:0;'>{t['subtitle']}</p>", unsafe_allow_html=True)
     
-    lang_col1, lang_col2, lang_col3 = st.columns([1, 2, 1])
+    # Switch de idioma compacto
+    st.markdown("""
+    <div style="display:flex; justify-content:center; gap:0.5rem; margin:1rem 0;">
+    """, unsafe_allow_html=True)
+    
+    lang_col1, lang_col2 = st.columns(2)
+    with lang_col1:
+        if st.button("🇪🇸 ES", use_container_width=True, type="primary" if st.session_state.lang == "es" else "secondary"):
+            set_language("es")
     with lang_col2:
-        st.markdown("""
-        <div style="display:flex; justify-content:center; background:#1E293B; padding:4px; border-radius:999px; border:1px solid #334155; width:fit-content; margin:1rem auto;">
-        """, unsafe_allow_html=True)
-        
-        col_es, col_en = st.columns(2)
-        with col_es:
-            if st.button("🇪 ES", use_container_width=True, type="primary" if st.session_state.lang == "es" else "secondary"):
-                set_language("es")
-        with col_en:
-            if st.button("🇺🇸 EN", use_container_width=True, type="primary" if st.session_state.lang == "en" else "secondary"):
-                set_language("en")
-        st.markdown("</div>", unsafe_allow_html=True)
+        if st.button("🇺🇸 EN", use_container_width=True, type="primary" if st.session_state.lang == "en" else "secondary"):
+            set_language("en")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -180,7 +176,7 @@ url = st.text_input(t["lbl_url"], placeholder=t["placeholder"])
 format_choice = st.radio("", [t["fmt_video"], t["fmt_audio"]], horizontal=True, label_visibility="collapsed")
 
 # ==========================================
-# ⚙️ LÓGICA DE PROCESAMIENTO
+# ⚙️ LÓGICA DE PROCESAMIENTO (SIN FFMPEG)
 # ==========================================
 if st.button(t["btn_process"], type="primary", use_container_width=True):
     if not url or not url.startswith("http"):
@@ -198,32 +194,37 @@ if st.button(t["btn_process"], type="primary", use_container_width=True):
                     'ignoreerrors': False,
                 }
                 
+                # SIN FFMPEG: Solo descarga formatos nativos
                 if t["fmt_audio"] in format_choice:
-                    st.write(t["converting_audio"])
+                    st.write(t["downloading"])
+                    # Busca MP3 nativo, si no, M4A (que es audio)
                     ydl_opts.update({
-                        'format': 'bestaudio/best',
-                        'postprocessors': [{
-                            'key': 'FFmpegExtractAudio',
-                            'preferredcodec': 'mp3',
-                            'preferredquality': '192',
-                        }],
+                        'format': 'bestaudio[ext=mp3]/bestaudio[ext=m4a]/bestaudio',
                     })
                     mime_type = "audio/mpeg"
                     ext = ".mp3"
                 else:
-                    st.write(t["downloading_video"])
+                    st.write(t["downloading"])
+                    # Busca MP4 nativo sin merging
                     ydl_opts.update({
-                        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-                        'merge_output_format': 'mp4',
+                        'format': 'best[ext=mp4]/bestvideo[ext=mp4]/best',
                     })
                     mime_type = "video/mp4"
                     ext = ".mp4"
 
-                st.write(t["saving"])
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     info = ydl.extract_info(url, download=True)
                     filename = ydl.prepare_filename(info)
-                    filename = os.path.splitext(filename)[0] + ext
+                    
+                    # Ajustar extensión si es necesario
+                    if not filename.endswith(ext):
+                        # Si descargó m4a pero queremos mp3, renombramos
+                        if ext == ".mp3" and filename.endswith(".m4a"):
+                            new_filename = filename[:-4] + ext
+                            os.rename(filename, new_filename)
+                            filename = new_filename
+                        else:
+                            filename = os.path.splitext(filename)[0] + ext
 
                 status.update(label=t["success"], state="complete", expanded=False)
                 
@@ -243,10 +244,10 @@ if st.button(t["btn_process"], type="primary", use_container_width=True):
                     
             except Exception as e:
                 status.update(label="❌ Error", state="error")
-                st.error(f"{t['error_general']}")
-                with st.expander("🔍 Ver detalles del error (para debugging)"):
+                st.error(t["error_general"])
+                with st.expander("🔍 Ver detalles del error"):
                     st.code(str(e))
-                st.info("💡 *Consejo: Algunos videos con restricciones de edad, privados o con derechos de autor pueden fallar. Intenta con otro video.*")
+                st.info("💡 *Consejo: Algunos videos pueden no tener el formato solicitado disponible.*")
 
 # ==========================================
 # 💰 ZONA DE DESCARGA Y MONETIZACIÓN
