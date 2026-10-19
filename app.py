@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import yt_dlp
 import os
 
@@ -104,21 +103,18 @@ if st.button("🚀 Iniciar Conversión y Descarga", type="primary", use_containe
                 output_dir = "downloads"
                 os.makedirs(output_dir, exist_ok=True)
 
-                # Opciones robustas de yt-dlp para evitar errores de formato y restricciones de YouTube
+                # Configuración sin necesidad de FFmpeg (formatos pre-combinados o directos)
                 if "MP3" in format_choice:
+                    # Intenta descargar el mejor audio disponible en formato m4a/mp3 directo
                     ydl_opts = {
-                        'format': 'ba[ext=m4a]/bestaudio/best',
+                        'format': 'bestaudio[ext=m4a]/bestaudio/best',
                         'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),
-                        'postprocessors': [{
-                            'key': 'FFmpegExtractAudio',
-                            'preferredcodec': 'mp3',
-                            'preferredquality': '192',
-                        }],
                         'noplaylist': True,
                     }
                 else:
+                    # Descarga formato MP4 directo que ya incluye video y audio juntos (sin requerir merge)
                     ydl_opts = {
-                        'format': 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/best',
+                        'format': 'best[ext=mp4]/best',
                         'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),
                         'noplaylist': True,
                     }
@@ -127,8 +123,10 @@ if st.button("🚀 Iniciar Conversión y Descarga", type="primary", use_containe
                     info = ydl.extract_info(url, download=True)
                     filename = ydl.prepare_filename(info)
                     
+                    # Asegurar extensión correcta
                     if "MP3" in format_choice:
-                        filename = os.path.splitext(filename)[0] + ".mp3"
+                        base, _ = os.path.splitext(filename)
+                        filename = base + ".m4a" # yt-dlp descarga directo en m4a excelente para audio
                     
                     file_name_only = os.path.basename(filename)
 
@@ -154,7 +152,7 @@ if st.button("🚀 Iniciar Conversión y Descarga", type="primary", use_containe
                         label=f"💾 Guardar {file_name_only} en tu dispositivo",
                         data=file,
                         file_name=file_name_only,
-                        mime="audio/mpeg" if "MP3" in format_choice else "video/mp4",
+                        mime="audio/mp4" if "MP3" in format_choice else "video/mp4",
                         use_container_width=True
                     )
 
