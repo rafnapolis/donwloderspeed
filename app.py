@@ -53,7 +53,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Panel Lateral / Sidebar (Lugar estratégico para publicidad Monetag)
+# Panel Lateral / Sidebar (Publicidad Monetag)
 with st.sidebar:
     st.header("⚡ Patrocinado")
     st.markdown(
@@ -66,17 +66,6 @@ with st.sidebar:
         </div>
         """,
         unsafe_allow_html=True
-    )
-    
-    # Inyección de redirección pop-under por JavaScript en iframe oculto
-    components.html(
-        f"""
-        <script>
-            // Abrir Monetag al interactuar si el usuario no ha hecho clic
-            console.log("Monetag Smartlink cargado");
-        </script>
-        """,
-        height=0
     )
 
 st.title("📥 Descargador de Videos y Audios")
@@ -115,20 +104,23 @@ if st.button("🚀 Iniciar Conversión y Descarga", type="primary", use_containe
                 output_dir = "downloads"
                 os.makedirs(output_dir, exist_ok=True)
 
+                # Opciones robustas de yt-dlp para evitar errores de formato y restricciones de YouTube
                 if "MP3" in format_choice:
                     ydl_opts = {
-                        'format': 'bestaudio/best',
+                        'format': 'ba[ext=m4a]/bestaudio/best',
                         'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),
                         'postprocessors': [{
                             'key': 'FFmpegExtractAudio',
                             'preferredcodec': 'mp3',
                             'preferredquality': '192',
                         }],
+                        'noplaylist': True,
                     }
                 else:
                     ydl_opts = {
-                        'format': 'best',
+                        'format': 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/best',
                         'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),
+                        'noplaylist': True,
                     }
 
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -142,7 +134,7 @@ if st.button("🚀 Iniciar Conversión y Descarga", type="primary", use_containe
 
                 st.success("✅ ¡Archivo procesado con éxito!")
 
-                # Banner publicitario antes de guardar el archivo para maximizar el CTR / impresiones
+                # Banner publicitario antes de guardar el archivo (Monetag)
                 st.markdown(
                     f"""
                     <div class="ad-banner">
