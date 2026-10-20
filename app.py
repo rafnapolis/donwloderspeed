@@ -2,27 +2,10 @@ import streamlit as st
 import yt_dlp
 import os
 import tempfile
-import subprocess
-import sys
 import requests
-import json
-import time
 
 # ==========================================
-# 🔄 ACTUALIZAR YT-DLP AUTOMÁTICAMENTE
-# ==========================================
-@st.cache_resource(show_spinner=False)
-def update_yt_dlp():
-    try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "yt-dlp", "-q"])
-        return True
-    except Exception:
-        return False
-
-update_yt_dlp()
-
-# ==========================================
-#  CONFIGURACIÓN DE MONETAG
+# 🚨 CONFIGURACIÓN DE MONETAG
 # ==========================================
 MONETAG_DIRECT_LINK = "https://uplcm.com/4/9616671"
 
@@ -46,13 +29,12 @@ TEXTS = {
         "fmt_audio": "🎵 Audio (MP3)",
         "btn_process": "⬇️ INICIAR DESCARGA RÁPIDA",
         "processing": "Procesando en pista...",
-        "fetching": " Obteniendo información del video...",
+        "fetching": "🔍 Obteniendo información del video...",
         "downloading": "⬇️ Descargando archivo...",
-        "trying_cobalt": "🔄 Intentando método alternativo...",
+        "trying_cobalt": "🔄 YouTube bloqueó la descarga directa. Intentando método alternativo...",
         "success": "✅ ¡Archivo procesado con éxito!",
         "error_invalid": "⚠️ Por favor, ingresa un enlace URL válido.",
         "error_general": "❌ Ocurrió un error al procesar el video.",
-        "error_blocked": "⚠️ YouTube bloqueó esta descarga. Intentando método alternativo...",
         "step1_title": "✅ Archivo listo para descargar",
         "step1_desc": "Para mantener este servicio gratuito y rápido, completa un breve paso de verificación.",
         "btn_monetag": "🛡️ Paso 1: Verificar y Apoyar (Abrir en nueva pestaña)",
@@ -65,17 +47,16 @@ TEXTS = {
         "subtitle": "Download videos and audio at maximum speed. No brakes.",
         "lbl_url": "Paste video link here",
         "placeholder": "https://www.youtube.com/watch?v=...",
-        "fmt_video": " Video (MP4)",
+        "fmt_video": "🎬 Video (MP4)",
         "fmt_audio": "🎵 Audio (MP3)",
         "btn_process": "⬇️ START FAST DOWNLOAD",
         "processing": "Processing on track...",
         "fetching": "🔍 Fetching video info...",
         "downloading": "⬇️ Downloading file...",
-        "trying_cobalt": "🔄 Trying alternative method...",
+        "trying_cobalt": "🔄 YouTube blocked direct download. Trying alternative method...",
         "success": "✅ File processed successfully!",
         "error_invalid": "⚠️ Please enter a valid URL link.",
         "error_general": "❌ An error occurred while processing the video.",
-        "error_blocked": "⚠️ YouTube blocked this download. Trying alternative method...",
         "step1_title": "✅ File ready for download",
         "step1_desc": "To keep this service free and fast, please complete a brief verification step.",
         "btn_monetag": "🛡️ Step 1: Verify & Support (Open in new tab)",
@@ -107,7 +88,6 @@ st.markdown("""
     #MainMenu, footer, header {visibility: hidden;}
     .main { background-color: #0F172A; padding: 2rem 1rem; }
     .stApp { background-color: #0F172A; }
-    
     .stTextInput > div > div > input {
         background-color: #1E293B; color: #F8FAFC;
         border: 1px solid #334155; border-radius: 0.75rem;
@@ -116,7 +96,6 @@ st.markdown("""
     .stTextInput > div > div > input:focus {
         border-color: #EF4444; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
     }
-    
     .stButton > button {
         background: linear-gradient(135deg, #EF4444, #B91C1C);
         color: white !important; border-radius: 0.75rem;
@@ -126,13 +105,11 @@ st.markdown("""
     }
     .stButton > button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); }
     .stButton > button:disabled { background: #475569; cursor: not-allowed; transform: none; }
-    
     .stRadio > div {
         background-color: #1E293B; padding: 0.5rem;
         border-radius: 0.75rem; border: 1px solid #334155;
     }
     .stRadio label { color: #F8FAFC; font-weight: 500; }
-    
     .monetag-btn {
         display: block; text-align: center;
         background: linear-gradient(135deg, #F59E0B, #D97706);
@@ -143,7 +120,6 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
     }
     .monetag-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4); }
-    
     .info-box {
         background: #1E293B; border: 1px solid #334155;
         border-radius: 0.75rem; padding: 1.5rem; text-align: center;
@@ -154,7 +130,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# ️ INTERFAZ DE USUARIO
+# 🖥️ INTERFAZ DE USUARIO
 # ==========================================
 col1, col2, col3 = st.columns([1, 3, 1])
 with col2:
@@ -170,7 +146,7 @@ with col2:
         if st.button("🇪🇸 ES", use_container_width=True, type="primary" if st.session_state.lang == "es" else "secondary"):
             set_language("es")
     with lang_col2:
-        if st.button("🇺 EN", use_container_width=True, type="primary" if st.session_state.lang == "en" else "secondary"):
+        if st.button("🇺🇸 EN", use_container_width=True, type="primary" if st.session_state.lang == "en" else "secondary"):
             set_language("en")
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -180,49 +156,35 @@ url = st.text_input(t["lbl_url"], placeholder=t["placeholder"])
 format_choice = st.radio("", [t["fmt_video"], t["fmt_audio"]], horizontal=True, label_visibility="collapsed")
 
 # ==========================================
-#  FUNCIÓN: DESCARGA CON COBALT API (FALLBACK)
+# ⚙️ FUNCIÓN FALLBACK: COBALT API
 # ==========================================
-def download_with_cobalt(url, is_audio):
-    """Usa Cobalt API como fallback cuando yt-dlp falla"""
+def download_with_cobalt(video_url, is_audio):
     try:
         cobalt_url = "https://api.cobalt.tools/api/json"
-        headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-        }
-        data = {
-            "url": url,
-            "vQuality": "720",
-            "filenamePattern": "basic"
-        }
+        headers = {"Accept": "application/json", "Content-Type": "application/json"}
+        data = {"url": video_url, "vQuality": "720", "filenamePattern": "basic"}
         
         if is_audio:
             data["isAudioOnly"] = True
             data["aFormat"] = "mp3"
         
         response = requests.post(cobalt_url, json=data, headers=headers, timeout=30)
-        
         if response.status_code == 200:
             result = response.json()
-            if result.get("status") == "stream" or result.get("status") == "redirect":
+            if result.get("status") in ["stream", "redirect"]:
                 download_url = result.get("url")
                 if download_url:
-                    # Descargar el archivo
                     file_response = requests.get(download_url, timeout=60, stream=True)
                     if file_response.status_code == 200:
                         temp_dir = tempfile.mkdtemp()
                         ext = ".mp3" if is_audio else ".mp4"
                         filename = os.path.join(temp_dir, f"download{ext}")
-                        
                         with open(filename, 'wb') as f:
                             for chunk in file_response.iter_content(chunk_size=8192):
                                 f.write(chunk)
-                        
                         return filename, "audio/mpeg" if is_audio else "video/mp4"
-        
         return None, None
-    except Exception as e:
-        st.warning(f"Cobalt API error: {str(e)}")
+    except Exception:
         return None, None
 
 # ==========================================
@@ -237,46 +199,29 @@ if st.button(t["btn_process"], type="primary", use_container_width=True):
                 temp_dir = tempfile.mkdtemp()
                 st.write(t["fetching"])
                 
-                # User-Agent real de navegador
-                user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                is_audio = t["fmt_audio"] in format_choice
                 
+                # Opciones simplificadas y robustas para yt-dlp
                 ydl_opts = {
                     'outtmpl': os.path.join(temp_dir, '%(title)s.%(ext)s'),
-                    'quiet': True, 
+                    'quiet': True,
                     'no_warnings': True,
-                    'ignoreerrors': False,
-                    'user_agent': user_agent,
+                    'geo_bypass': True, # Evita bloqueos regionales
                     'http_headers': {
-                        'User-Agent': user_agent,
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        'Accept-Language': 'en-US,en;q=0.5',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
                     },
-                    'extractor_args': {
-                        'youtube': {
-                            'player_client': ['web', 'web_embedded', 'mediaconnect', 'mweb'],
-                        }
-                    },
-                    'retries': 3,
-                    'fragment_retries': 3,
                 }
-                
-                is_audio = t["fmt_audio"] in format_choice
                 
                 if is_audio:
                     st.write(t["downloading"])
-                    ydl_opts.update({
-                        'format': 'bestaudio[ext=mp3]/bestaudio[ext=m4a]/bestaudio',
-                    })
-                    mime_type = "audio/mpeg"
-                    ext = ".mp3"
+                    ydl_opts['format'] = 'bestaudio[ext=mp3]/bestaudio[ext=m4a]/bestaudio'
+                    mime_type, ext = "audio/mpeg", ".mp3"
                 else:
                     st.write(t["downloading"])
-                    ydl_opts.update({
-                        'format': 'best[ext=mp4]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/best',
-                        'merge_output_format': 'mp4',
-                    })
-                    mime_type = "video/mp4"
-                    ext = ".mp4"
+                    ydl_opts['format'] = 'best[ext=mp4]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/best'
+                    ydl_opts['merge_output_format'] = 'mp4'
+                    mime_type, ext = "video/mp4", ".mp4"
 
                 filename = None
                 try:
@@ -292,9 +237,8 @@ if st.button(t["btn_process"], type="primary", use_container_width=True):
                             else:
                                 filename = os.path.splitext(filename)[0] + ext
                 except Exception as e:
-                    if "403" in str(e) or "Forbidden" in str(e):
-                        st.warning(t["error_blocked"])
-                        st.write(t["trying_cobalt"])
+                    if "403" in str(e) or "Failed to extract" in str(e):
+                        st.warning(t["trying_cobalt"])
                         filename, mime_type = download_with_cobalt(url, is_audio)
                         if filename:
                             ext = ".mp3" if is_audio else ".mp4"
@@ -303,7 +247,6 @@ if st.button(t["btn_process"], type="primary", use_container_width=True):
 
                 if filename and os.path.exists(filename):
                     status.update(label=t["success"], state="complete", expanded=False)
-                    
                     with open(filename, "rb") as file:
                         file_bytes = file.read()
                     
@@ -314,7 +257,6 @@ if st.button(t["btn_process"], type="primary", use_container_width=True):
                     
                     os.remove(filename)
                     os.rmdir(temp_dir)
-                    
                     st.rerun()
                 else:
                     raise Exception("No se pudo descargar el archivo")
@@ -324,14 +266,13 @@ if st.button(t["btn_process"], type="primary", use_container_width=True):
                 st.error(t["error_general"])
                 with st.expander("🔍 Ver detalles del error"):
                     st.code(str(e))
-                st.info("💡 *Consejo: YouTube a veces bloquea descargas desde servidores en la nube. Intenta con otro video o espera unos minutos.*")
+                st.info("💡 *Consejo: Si el video tiene restricción de edad o derechos de autor, YouTube lo bloqueará. Prueba con otro video.*")
 
 # ==========================================
 # 💰 ZONA DE DESCARGA Y MONETIZACIÓN
 # ==========================================
 if st.session_state.file_ready:
     st.markdown("---")
-    
     st.markdown(f"""
     <div class="info-box">
         <h3>{t['step1_title']}</h3>
@@ -340,10 +281,7 @@ if st.session_state.file_ready:
     """, unsafe_allow_html=True)
     
     st.markdown(f"""
-    <a href="{MONETAG_DIRECT_LINK}" 
-       target="_blank" 
-       rel="noopener noreferrer"
-       class="monetag-btn">
+    <a href="{MONETAG_DIRECT_LINK}" target="_blank" rel="noopener noreferrer" class="monetag-btn">
         {t['btn_monetag']}
     </a>
     """, unsafe_allow_html=True)
