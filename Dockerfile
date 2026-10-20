@@ -5,9 +5,11 @@ RUN apt-get update && \
     apt-get install -y ffmpeg && \
     rm -rf /var/lib/apt/lists/*
 
-# Instalar dependencias de Python
+# Copiar requirements e instalar dependencias
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# FORZAMOS la actualización de yt-dlp a la última versión durante la construcción
+RUN pip install --no-cache-dir --upgrade yt-dlp && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copiar la aplicación
 COPY app.py .
